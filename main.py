@@ -33,17 +33,14 @@ async def lifespan(app: FastAPI):
         await create_tables()
         await init_redis_pool()
         logger.info("Application startup completed")
+        yield  # This allows the application to run
     except Exception as e:
         logger.error(f"Application startup failed: {str(e)}")
-        # Allow the application to start even if database init fails
-    yield
-    # Shutdown
-    try:
+    finally:
+        # Shutdown
         await close_db_connection()
         await close_redis_connection()
         logger.info("Application shutdown completed")
-    except Exception as e:
-        logger.error(f"Application shutdown error: {str(e)}")
 
 app = FastAPI(
     title="Authentication API",
@@ -62,4 +59,4 @@ app.include_router(auth.router)
 # Add a health check endpoint
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"} 
+    return {"status": "healthy", "version": "1.0.0"} 

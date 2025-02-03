@@ -1,8 +1,22 @@
 import pytest
-from app.database import get_db
-from app.models.user import User
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from app.database import get_db, create_tables
+from app.models.user import User
+from sqlalchemy import select
+
+@pytest.fixture(scope="module")
+async def db() -> AsyncSession:
+    # Create a new database session for testing
+    async with get_db() as session:
+        yield session
+        await session.close()
+
+@pytest.fixture(scope="module", autouse=True)
+async def setup_database():
+    # Create the test database and tables
+    await create_tables()
+    yield
+    # Optionally, drop the test database here
 
 @pytest.mark.asyncio
 async def test_create_user(db: AsyncSession):
