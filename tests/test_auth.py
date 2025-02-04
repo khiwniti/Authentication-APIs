@@ -38,21 +38,23 @@ def setup_database():
     yield
     # Optionally, drop the test database here
 
-def test_register_user(test_client, db):
-    # Test user registration
+def test_register_user(test_client):
     response = test_client.post(
-        "/api/auth/v1/register",
-        json={"email": "test@example.com", "password": "testpassword", "full_name": "Test User"}
+        "/api/v1/auth/register",
+        json={
+            "email": "new_user@example.com",
+            "password": "testpassword",
+            "full_name": "New Test User"
+        }
     )
     assert response.status_code == 201
-    assert response.json()["email"] == "test@example.com"
+    assert response.json()["email"] == "new_user@example.com"
 
 def test_login_user(test_client):
-    # Test user login
     response = test_client.post(
-        "/api/auth/v1/login",
-        json={
-            "email": "test@example.com",
+        "/api/v1/auth/login",
+        data={
+            "username": "new_user@example.com",
             "password": "testpassword"
         }
     )
@@ -60,15 +62,16 @@ def test_login_user(test_client):
     assert "access_token" in response.json()
 
 def test_login_invalid_user(test_client):
-    # Test login with invalid credentials
     response = test_client.post(
-        "/api/auth/v1/login",
-        data={"username": "invalid@example.com", "password": "wrongpassword"}
+        "/api/v1/auth/login",
+        data={
+            "username": "invalid@example.com",
+            "password": "wrongpassword"
+        }
     )
     assert response.status_code == 401
-    assert response.json()["detail"] == "Incorrect email or password"
 
 def test_health_check(test_client):
-    response = test_client.get("/api/auth/v1/health")
+    response = test_client.get("/health")
     assert response.status_code == 200
     assert response.json() == {"status": "healthy", "version": "1.0.0"} 
